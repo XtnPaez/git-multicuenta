@@ -8,12 +8,19 @@ Configuración y documentación para trabajar con varias cuentas de Git desde lo
 
 | Alias SSH | Servidor | Tipo | Usuario / cuenta | Carpeta local |
 |---|---|---|---|---|
-| `github-xtnpaez` | github.com (vía `ssh.github.com:443`) | GitHub | XtnPaez | `~/repos/xtnpaez/` |
-| `github-gitmapa` | github.com (vía `ssh.github.com:443`) | GitHub | gitmapa | `~/repos/gitmapa/` |
-| `asimov` | asimov.cncps.gob.ar | Gogs institucional | cpaez | `~/repos/asimov/` |
-| `gitlab-cncps` | repositorio.cncps.gob.ar | GitLab institucional | cpaez | `~/repos/gitlab/` |
+| `github-xtnpaez` | github.com (vía `ssh.github.com:443`) | GitHub | XtnPaez | `~/devstack/www/XtnPaez/` |
+| `github-aal` | github.com (vía `ssh.github.com:443`) | GitHub | aal | `~/devstack/www/AAL/` |
+| `github-gitmapa` | github.com (vía `ssh.github.com:443`) | GitHub | gitmapa | *(a definir)* |
+| `asimov` | asimov.cncps.gob.ar | Gogs institucional | cpaez | `~/devstack/www/callao/asimov/` |
+| `gitlab-cncps` | repositorio.cncps.gob.ar | GitLab institucional | cpaez | `~/devstack/www/callao/gitlab/` |
+| ? | ? | ? | ? | `~/devstack/www/callao/externos/` |
+| ? | ? | ? | ? | `~/devstack/www/perette/` |
 
-*(Pendiente de confirmar: cuenta `aal`, puertos de asimov y gitlab, carpetas finales.)*
+**Regla: una carpeta = una cuenta.** La carpeta decide la identidad de los commits, el alias SSH y dónde clona `gclone`.
+
+*(Pendiente de confirmar: externos, perette, gitmapa, puertos de asimov y gitlab.)*
+
+> 🆘 **¿Algo no anda?** Empezá por [docs/FAQ.md](docs/FAQ.md).
 
 ## Cómo funciona
 
@@ -28,6 +35,7 @@ Configuración y documentación para trabajar con varias cuentas de Git desde lo
 ```
 README.md              ← esto
 docs/
+  FAQ.md                 ← problemas frecuentes: buscar acá primero
   diagnostico-callao.md  ← estado inicial de Callao y problemas encontrados
 scripts/
   diagnostico.sh         ← prueba qué clave abre qué servidor
