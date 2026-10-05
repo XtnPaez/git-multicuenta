@@ -112,6 +112,21 @@ git commit --amend --reset-author --no-edit
 
 ---
 
+## no such identity: …/.ssh/cncps_ed25519: No such file or directory
+
+**Por qué:** `~/.ssh/config` apunta a `cncps_ed25519`, pero ese archivo no existe en esta máquina (en Callao: falta el paso 2 de la guía, renombrar `gitlab_ed25519`).
+
+**Qué hacer:**
+
+```bash
+ls ~/.ssh
+```
+
+- Si está `gitlab_ed25519`: `mv ~/.ssh/gitlab_ed25519 ~/.ssh/cncps_ed25519 && mv ~/.ssh/gitlab_ed25519.pub ~/.ssh/cncps_ed25519.pub`
+- Si es una máquina nueva sin clave: generarla y cargarla en asimov y GitLab (ver guía del puesto).
+
+---
+
 ## no matching host key type found. Their offer: ssh-rsa
 
 **Por qué:** asimov usa un algoritmo viejo que OpenSSH moderno desactiva por defecto.

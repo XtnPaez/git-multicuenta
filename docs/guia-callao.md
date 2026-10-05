@@ -47,7 +47,7 @@ ssh -T gitlab-cncps                          # → Welcome to GitLab, @cpaez!
 git ls-remote git@asimov:cpaez/efpi.git HEAD # → un hash y HEAD
 ```
 
-✋ Si alguno falla, no seguir: volver al respaldo y avisar.
+✋ Si alguno falla, no seguir. Si el error es `no such identity: …cncps_ed25519`, falta el paso 2 (ver [FAQ](FAQ.md)). Otro error: volver al respaldo y avisar.
 
 ## 4. Migrar los remotos de los repos
 
