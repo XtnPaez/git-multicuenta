@@ -1,0 +1,9 @@
+# Nunca subir claves privadas
+id_*
+!*.pub
+*_ed25519
+*_rsa
+bowie
+*.pem
+*.key
+known_hosts*
