@@ -1,0 +1,42 @@
+# ~/.gitconfig — git-multicuenta
+# La identidad de cada commit la decide la URL del remoto (includeIf hasconfig,
+# requiere Git 2.36+), no la carpeta. Lo que no matchea usa la identidad global.
+
+[user]
+    name = XtnPaez
+    email = paez.cristian@gmail.com
+
+[core]
+    autocrlf = false
+    quotepath = off
+
+[i18n]
+    commitEncoding = utf-8
+    logOutputEncoding = utf-8
+
+[init]
+    defaultBranch = main
+
+# --- Institucional (asimov + GitLab) -> cpaez@siempro.gob.ar ----------
+[includeIf "hasconfig:remote.*.url:git@asimov:*/**"]
+    path = ~/.gitconfig.d/cncps
+[includeIf "hasconfig:remote.*.url:https://asimov.cncps.gob.ar/**"]
+    path = ~/.gitconfig.d/cncps
+[includeIf "hasconfig:remote.*.url:git@gitlab-cncps:*/**"]
+    path = ~/.gitconfig.d/cncps
+[includeIf "hasconfig:remote.*.url:git@gitlab-callao:*/**"]
+    path = ~/.gitconfig.d/cncps
+[includeIf "hasconfig:remote.*.url:http*://repositorio.cncps.gob.ar/**"]
+    path = ~/.gitconfig.d/cncps
+
+# --- GitHub asiaamericalatina -> aal.github@gmail.com -----------------
+[includeIf "hasconfig:remote.*.url:https://asiaamericalatina@github.com/**"]
+    path = ~/.gitconfig.d/aal
+[includeIf "hasconfig:remote.*.url:https://github.com/asiaamericalatina/**"]
+    path = ~/.gitconfig.d/aal
+
+# --- GitHub gitmapa ---------------------------------------------------
+[includeIf "hasconfig:remote.*.url:https://gitmapa@github.com/**"]
+    path = ~/.gitconfig.d/gitmapa
+[includeIf "hasconfig:remote.*.url:https://github.com/gitmapa/**"]
+    path = ~/.gitconfig.d/gitmapa

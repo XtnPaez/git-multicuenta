@@ -2,101 +2,121 @@
 
 Buscá con Ctrl+F el mensaje de error o el síntoma. Cada respuesta tiene: **por qué pasa** y **qué hacer**.
 
-> Los comandos son para **Git Bash**. Donde dice `<alias>` va uno de: `github-xtnpaez`, `github-gitmapa`, `github-aal`, `asimov`, `gitlab-cncps` (ver README).
+> Los comandos son para **Git Bash**. Recordatorio del esquema: **GitHub por HTTPS** con el usuario en la URL; **asimov y GitLab por SSH** con los alias `asimov` y `gitlab-cncps` (ver README).
 
 ---
 
 ## 🩺 Triage rápido: "no me deja clonar / pushear"
 
-Antes de buscar el error puntual, estos 3 comandos resuelven el 80% de los casos:
-
 ```bash
-git remote -v                 # 1. ¿La URL es SSH con alias o HTTPS?
-ssh -T <alias>                # 2. ¿La clave de ese alias entra al servidor?
-ssh -vT <alias> 2>&1 | grep -iE "identity file|offering|accepted|denied"   # 3. ¿Qué clave está probando?
+git remote -v                 # 1. ¿Qué URL tiene el repo?
+git config user.email         # 2. ¿Con qué identidad va a commitear?
+bash ~/devstack/www/XtnPaez/git-multicuenta/scripts/verificar.sh   # 3. Chequeo de todos los repos
 ```
 
-- Si la URL empieza con `https://` → ver [Se abre una ventanita de login](#se-abre-una-ventanita-de-login-web).
-- Si la URL es `git@github.com:...` (sin alias) → ver [Repository not found](#repository-not-found-pero-el-repo-existe).
-- Si `ssh -T` falla → ver [Permission denied (publickey)](#permission-denied-publickey).
+Según la URL del paso 1:
+
+| La URL es… | Está… | Ver |
+|---|---|---|
+| `https://<cuenta>@github.com/...` | ✅ bien | [Repository not found](#repository-not-found-pero-el-repo-existe) si falla |
+| `https://github.com/...` (sin usuario) | ⚠️ puede elegir cualquier cuenta | [Repository not found](#repository-not-found-pero-el-repo-existe) |
+| `git@github.com:...` o `git@github-xxx:...` | ❌ SSH a GitHub, bloqueado en Callao | [Connection timed out](#connection-timed-out) |
+| `git@asimov:...` / `git@gitlab-cncps:...` | ✅ bien | [Permission denied](#permission-denied-publickey) si falla |
+| `https://asimov...` / `http://repositorio...` | ⚠️ HTTPS a institucional | correr `scripts/migrar-remotos.sh` |
 
 ---
 
 ## Se abre una ventanita de login web
 
-**Por qué:** el repo usa una URL `https://`. Git le pide credenciales al administrador de credenciales de Windows, que abre el login del navegador.
+**Por qué:** es el administrador de credenciales de Git pidiendo login para una cuenta de GitHub que todavía no guardó en esta máquina.
 
-**Qué hacer:** pasar el repo a SSH con el alias de su cuenta.
+**Qué hacer:** es **normal la primera vez** por cuenta y por máquina. Logueate **con la cuenta que dice la URL** (`https://XtnPaez@...` → XtnPaez).
 
-```bash
-git remote set-url origin git@<alias>:<usuario>/<repo>.git
-git remote -v    # verificar
-```
+⚠️ Si elegís "Sign in with your browser", se autoriza la cuenta que tenga abierta el navegador. Para una cuenta distinta a la del navegador, elegí **Token** (y pegá un token personal creado desde esa cuenta) o usá una ventana de incógnito.
 
-Ejemplo: `git remote set-url origin git@github-xtnpaez:XtnPaez/git-multicuenta.git`
+Si la ventanita aparece **todas las veces**, la URL no tiene el usuario: corré `bash scripts/migrar-remotos.sh`.
 
 ---
 
-## Permission denied (publickey)
+## Me logueé con la cuenta equivocada en la ventanita
 
-**Por qué:** la clave que usa ese alias no está registrada en esa cuenta del servidor, o el alias apunta a un archivo de clave que no existe en esta máquina.
+**Qué hacer:** borrar la credencial guardada y volver a intentar.
 
-**Qué hacer:**
+```bash
+git credential-manager github list               # cuentas guardadas
+git credential-manager github logout <usuario>   # borrar la equivocada
+```
 
-1. Ver qué clave usa el alias: `ssh -G <alias> | grep identityfile`
-2. Verificar que el archivo existe: `ls -l ~/.ssh/`
-3. Ver la clave pública y comprobar que esté cargada en la web del servidor (GitHub → Settings → SSH and GPG keys; Gogs/GitLab → Configuración de usuario → Claves SSH):
-   ```bash
-   cat ~/.ssh/<clave>.pub
-   ```
-4. Si no está, pegala ahí con un título que diga la máquina (ej. `Callao - PCx016`).
+Si eso no alcanza: Windows → *Administrador de credenciales* → *Credenciales de Windows* → borrar las entradas `git:https://github.com` y `git:https://<usuario>@github.com`. (No requiere admin.)
 
 ---
 
 ## Repository not found (pero el repo existe)
 
-**Por qué:** típico de varias cuentas en GitHub. Entraste con **otra** cuenta, que no tiene acceso a ese repo. Pasa cuando la URL usa `github.com` directo en vez del alias.
+**Por qué:** GitHub te autenticó con **otra** cuenta, que no tiene acceso a ese repo. Pasa cuando la URL no tiene el usuario (`https://github.com/...`) y el administrador de credenciales eligió una cuenta cualquiera.
+
+**Qué hacer:** poner en la URL la cuenta que tiene acceso:
+
+```bash
+git remote set-url origin https://<cuenta>@github.com/<dueño>/<repo>.git
+```
+
+Si la URL ya tenía el usuario correcto: ver [Me logueé con la cuenta equivocada](#me-logueé-con-la-cuenta-equivocada-en-la-ventanita).
+
+---
+
+## Permission denied (publickey)
+
+Solo aplica a **asimov y GitLab** (GitHub no usa SSH).
+
+**Por qué:** la clave de esta máquina (`~/.ssh/cncps_ed25519`) no está cargada en el servidor, o no existe.
 
 **Qué hacer:**
 
-```bash
-ssh -T github-xtnpaez     # debe decir "Hi XtnPaez!"
-ssh -T github-gitmapa     # debe decir "Hi gitmapa!"
-```
+1. Probar: `ssh -T gitlab-cncps` y `git ls-remote git@asimov:cpaez/efpi.git HEAD`
+2. Ver que la clave existe: `ls ~/.ssh/cncps_ed25519*`
+3. Mostrar la pública y cargarla en la web (asimov → Configuración → Claves SSH; GitLab → Preferences → SSH Keys), con un título que diga la máquina (ej. `Callao - PCx016`):
+   ```bash
+   cat ~/.ssh/cncps_ed25519.pub
+   ```
 
-Corregí el remoto para que use el alias de la cuenta dueña del repo (ver [ventanita de login](#se-abre-una-ventanita-de-login-web)).
+---
+
+## Connection timed out
+
+**Por qué:**
+- **GitHub por SSH:** la red de Callao bloquea SSH hacia GitHub (puertos 22 y 443). Hay que usar HTTPS.
+- **asimov / GitLab:** solo son accesibles desde la red del CNCPS (Callao o VPN).
+
+**Qué hacer:**
+- GitHub: `bash scripts/migrar-remotos.sh --aplicar` (pasa todo a HTTPS).
+- asimov / GitLab: conectate a la VPN de Callao. Sin VPN (Perette, casa) no se puede: trabajá local y pusheá cuando estés conectado.
 
 ---
 
 ## El commit salió con el nombre o mail equivocado
 
-**Por qué:** el repo está fuera de la carpeta de su cuenta, entonces `includeIf` no aplica y usa la identidad global.
+**Por qué:** la identidad la decide la URL del remoto. Si la URL no matchea ninguna regla de `~/.gitconfig`, usa la global (XtnPaez). También pasa en un repo nuevo **antes** de agregarle el remoto.
 
 **Qué hacer:**
 
 ```bash
-git config user.email         # ¿qué mail está usando este repo?
-git config --show-origin user.email   # ¿de qué archivo sale?
+git remote -v                          # ¿la URL tiene el formato del README?
+git config --show-origin user.email    # ¿de qué archivo sale el mail?
 ```
 
-- Si el repo está en la carpeta equivocada, movelo a la correcta.
-- Para corregir **el último** commit (solo si todavía no lo pusheaste):
-  ```bash
-  git commit --amend --reset-author --no-edit
-  ```
+Para corregir **el último** commit (solo si todavía no lo pusheaste):
+```bash
+git commit --amend --reset-author --no-edit
+```
 
 ---
 
 ## no matching host key type found. Their offer: ssh-rsa
 
-**Por qué:** el servidor (asimov) usa un algoritmo viejo que OpenSSH moderno desactiva por defecto.
+**Por qué:** asimov usa un algoritmo viejo que OpenSSH moderno desactiva por defecto.
 
-**Qué hacer:** el bloque del alias en `~/.ssh/config` tiene que incluir:
-
-```
-HostKeyAlgorithms +ssh-rsa
-PubkeyAcceptedAlgorithms +ssh-rsa
-```
+**Qué hacer:** el bloque `Host asimov` de `~/.ssh/config` tiene que incluir `HostKeyAlgorithms +ssh-rsa`. La plantilla ya lo trae: `cp plantillas/ssh_config ~/.ssh/config`.
 
 ---
 
@@ -107,41 +127,32 @@ PubkeyAcceptedAlgorithms +ssh-rsa
 **Qué hacer:** confirmá con quien administra el servidor que el cambio es legítimo. Después:
 
 ```bash
-ssh-keygen -R asimov.cncps.gob.ar            # o el host que corresponda
-ssh-keygen -R "[asimov.cncps.gob.ar]:2222"   # si usa puerto no estándar
-ssh -T <alias>                               # acepta la clave nueva
+ssh-keygen -R "[asimov.cncps.gob.ar]:2222"   # asimov
+ssh-keygen -R repositorio.cncps.gob.ar       # GitLab
 ```
 
----
-
-## Connection timed out / Connection refused
-
-**Por qué:**
-- **GitHub:** la red bloquea el puerto 22. Nuestros alias ya usan `ssh.github.com` puerto 443, que casi nunca está bloqueado.
-- **asimov / GitLab desde la notebook fuera de la oficina:** probablemente solo son accesibles desde la red del CNCPS. *(A confirmar.)*
-
-**Qué hacer:** probá `ssh -T <alias>`. Si es asimov o GitLab y estás fuera de la oficina, conectate a la VPN (si existe) o trabajá desde la oficina.
+y volvé a probar; acepta la clave nueva.
 
 ---
 
 ## Me pide la passphrase de la clave cada vez
 
-**Por qué:** la clave tiene passphrase y no hay agente que la recuerde. El `ssh-agent` de Windows necesita admin.
+**Por qué:** la clave tiene passphrase y no hay agente que la recuerde (el `ssh-agent` de Windows necesita admin).
 
 **Qué hacer:** usar el agente de Git Bash, que no necesita admin. Por sesión de terminal:
 
 ```bash
 eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/<clave>
+ssh-add ~/.ssh/cncps_ed25519
 ```
 
 ---
 
-## SSL certificate problem (al usar HTTPS)
+## SSL certificate problem
 
-**Por qué:** el servidor institucional usa un certificado que Windows no reconoce.
+**Por qué:** HTTPS contra un servidor institucional con certificado que Windows no reconoce.
 
-**Qué hacer:** **no** desactivar la verificación globalmente (`http.sslverify=false` afecta también a GitHub). Lo correcto es usar SSH. Si sí o sí necesitás HTTPS para un servidor puntual, limitalo a ese host:
+**Qué hacer:** usar SSH (`bash scripts/migrar-remotos.sh --aplicar`). **No** poner `http.sslverify=false` global: desactiva la seguridad también para GitHub. Si sí o sí hace falta HTTPS a un servidor puntual:
 
 ```bash
 git config --global http.https://asimov.cncps.gob.ar/.sslVerify false
@@ -151,21 +162,23 @@ git config --global http.https://asimov.cncps.gob.ar/.sslVerify false
 
 ## ¿Dónde clono un repo nuevo y con qué URL?
 
-| Si el repo es de… | Carpeta | URL |
+| Si el repo es de… | Carpeta sugerida | URL |
 |---|---|---|
-| GitHub XtnPaez | `~/devstack/www/XtnPaez/` | `git@github-xtnpaez:XtnPaez/<repo>.git` |
-| GitHub gitmapa | *(a definir)* | `git@github-gitmapa:gitmapa/<repo>.git` |
-| GitHub AAL | `~/devstack/www/AAL/` | `git@github-aal:<usuario>/<repo>.git` |
-| asimov (Gogs) | `~/devstack/www/callao/asimov/` | `git@asimov:<usuario>/<repo>.git` |
+| GitHub XtnPaez | `~/devstack/www/XtnPaez/` | `https://XtnPaez@github.com/XtnPaez/<repo>.git` |
+| GitHub asiaamericalatina | `~/devstack/www/AAL/` | `https://asiaamericalatina@github.com/asiaamericalatina/<repo>.git` |
+| GitHub gitmapa | `~/devstack/www/perette/` | `https://gitmapa@github.com/gitmapa/<repo>.git` |
+| asimov | `~/devstack/www/callao/asimov/` | `git@asimov:cpaez/<repo>.git` |
 | GitLab CNCPS | `~/devstack/www/callao/gitlab/` | `git@gitlab-cncps:<grupo>/<repo>.git` |
 
-Truco: copiá la URL SSH que muestra la web y reemplazá el host (`github.com`, `asimov.cncps.gob.ar`, etc.) por el alias.
+Truco: copiá la URL que muestra la web y adaptala:
+- GitHub: agregá `<cuenta>@` después de `https://`.
+- asimov / GitLab: copiá la URL SSH y reemplazá el host por el alias.
 
 ---
 
 ## ¿Cómo agrego un puesto nuevo o una cuenta nueva?
 
-*(Pendiente: se documenta en `docs/guia-puesto.md` cuando terminemos Callao.)*
+*(Pendiente: se documenta en la guía genérica de puesto.)*
 
 ---
 

@@ -1,0 +1,24 @@
+# ~/.ssh/config — git-multicuenta
+# Solo servidores institucionales. GitHub va por HTTPS (ver README).
+# Una clave por máquina: ~/.ssh/cncps_ed25519 (sirve para asimov y GitLab).
+
+# --- asimov (Gogs) ---------------------------------------------------
+# El SSH de git es el puerto 2222. El 22 es el SSH del sistema: NO usar.
+# Uso:  git@asimov:cpaez/<repo>.git
+Host asimov
+    HostName asimov.cncps.gob.ar
+    Port 2222
+    User git
+    IdentityFile ~/.ssh/cncps_ed25519
+    IdentitiesOnly yes
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa
+
+# --- GitLab institucional --------------------------------------------
+# Uso:  git@gitlab-cncps:<grupo>/<repo>.git
+# (gitlab-callao es el nombre viejo; se mantiene para no romper remotos)
+Host gitlab-cncps gitlab-callao
+    HostName repositorio.cncps.gob.ar
+    User git
+    IdentityFile ~/.ssh/cncps_ed25519
+    IdentitiesOnly yes

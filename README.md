@@ -4,49 +4,69 @@ Configuración y documentación para trabajar con varias cuentas de Git desde lo
 
 > ⚠️ Este repo **nunca** contiene claves privadas. Solo plantillas, documentación y scripts. Las claves se generan en cada máquina y no salen de ahí.
 
+> 🆘 **¿Algo no anda?** Empezá por [docs/FAQ.md](docs/FAQ.md).
+
 ## Cuentas
 
-| Alias SSH | Servidor | Tipo | Usuario / cuenta | Carpeta local |
+| Cuenta | Servidor | Cómo se conecta | URL de los remotos | Commitea como |
 |---|---|---|---|---|
-| `github-xtnpaez` | github.com (vía `ssh.github.com:443`) | GitHub | XtnPaez | `~/devstack/www/XtnPaez/` |
-| `github-aal` | github.com (vía `ssh.github.com:443`) | GitHub | aal | `~/devstack/www/AAL/` |
-| `github-gitmapa` | github.com (vía `ssh.github.com:443`) | GitHub | gitmapa | *(a definir)* |
-| `asimov` | asimov.cncps.gob.ar | Gogs institucional | cpaez | `~/devstack/www/callao/asimov/` |
-| `gitlab-cncps` | repositorio.cncps.gob.ar | GitLab institucional | cpaez | `~/devstack/www/callao/gitlab/` |
-| ? | ? | ? | ? | `~/devstack/www/callao/externos/` |
-| ? | ? | ? | ? | `~/devstack/www/perette/` |
-
-**Regla: una carpeta = una cuenta.** La carpeta decide la identidad de los commits, el alias SSH y dónde clona `gclone`.
-
-*(Pendiente de confirmar: externos, perette, gitmapa, puertos de asimov y gitlab.)*
-
-> 🆘 **¿Algo no anda?** Empezá por [docs/FAQ.md](docs/FAQ.md).
+| XtnPaez | GitHub | HTTPS | `https://XtnPaez@github.com/XtnPaez/<repo>.git` | XtnPaez · paez.cristian@gmail.com |
+| asiaamericalatina | GitHub | HTTPS | `https://asiaamericalatina@github.com/asiaamericalatina/<repo>.git` | asiaamericalatina · aal.github@gmail.com |
+| gitmapa | GitHub | HTTPS | `https://gitmapa@github.com/gitmapa/<repo>.git` | *(pendiente)* |
+| cpaez | asimov (Gogs) | SSH, puerto 2222 | `git@asimov:cpaez/<repo>.git` | cpaez · cpaez@siempro.gob.ar |
+| @cpaez | GitLab CNCPS | SSH | `git@gitlab-cncps:<grupo>/<repo>.git` | cpaez · cpaez@siempro.gob.ar |
 
 ## Cómo funciona
 
-1. **Una clave por cuenta y por máquina.** Si se pierde la notebook, se revocan solo sus claves.
-2. **`~/.ssh/config` con un alias por cuenta.** Cada alias está atado a su clave con `IdentitiesOnly yes`, así SSH no prueba claves equivocadas. No hace falta `ssh-agent` (que requiere admin en Windows).
-3. **Los remotos usan el alias, no el host real.**
-   `git@github-gitmapa:gitmapa/repo.git` en lugar de `git@github.com:gitmapa/repo.git`.
-4. **Una carpeta por cuenta + `includeIf` en `~/.gitconfig`.** Cada carpeta firma los commits con el nombre y mail correctos automáticamente.
+1. **GitHub va por HTTPS, con el usuario en la URL.** La red de Callao bloquea SSH hacia GitHub (puertos 22 y 443). HTTPS anda en cualquier red. El administrador de credenciales de Git guarda un login por cuenta: la ventanita aparece **una vez por cuenta y por máquina**, y nunca más.
+2. **asimov y GitLab van por SSH**, con una sola clave por máquina (`~/.ssh/cncps_ed25519`) y alias en `~/.ssh/config`. No hace falta `ssh-agent` (que requiere admin en Windows).
+3. **La identidad de cada commit la decide la URL del remoto**, no la carpeta (`includeIf "hasconfig:remote.*.url:..."` en `~/.gitconfig`, Git 2.36+). Las carpetas se organizan como uno quiera; `perette/` puede mezclar cuentas sin problema.
+
+## Carpetas
+
+Todas bajo `~/devstack/www/` (`C:\Users\cpaez\devstack\www\`):
+
+| Carpeta | Contenido |
+|---|---|
+| `XtnPaez/` | repos personales de GitHub XtnPaez |
+| `AAL/` | repos de asiaamericalatina |
+| `callao/asimov/` | repos de asimov |
+| `callao/gitlab/` | repos del GitLab institucional |
+| `callao/externos/` | repos de terceros (solo lectura, no se migran) |
+| `perette/` | proyectos de Perette (mezcla asimov y GitHub) |
+
+## Accesibilidad por puesto
+
+| Puesto | GitHub | asimov / GitLab |
+|---|---|---|
+| Callao | ✅ HTTPS | ✅ red interna |
+| Notebook con VPN de Callao | ✅ HTTPS | ✅ (a confirmar) |
+| Notebook / Perette sin VPN | ✅ HTTPS | ❌ no alcanzables |
 
 ## Estructura del repo
 
 ```
-README.md              ← esto
+README.md                  ← esto
 docs/
-  FAQ.md                 ← problemas frecuentes: buscar acá primero
-  diagnostico-callao.md  ← estado inicial de Callao y problemas encontrados
+  FAQ.md                   ← problemas frecuentes: buscar acá primero
+  guia-callao.md           ← paso a paso para Callao
+  diagnostico-callao.md    ← estado inicial de Callao y problemas encontrados
+plantillas/
+  ssh_config               ← va a ~/.ssh/config
+  gitconfig                ← va a ~/.gitconfig
+  gitconfig.d/             ← identidades; van a ~/.gitconfig.d/
 scripts/
-  diagnostico.sh         ← prueba qué clave abre qué servidor
+  diagnostico.sh           ← prueba qué clave abre qué servidor y lista repos
+  migrar-remotos.sh        ← pasa los remotos al esquema (simula por defecto)
+  verificar.sh             ← chequea remoto, identidad y conexión de cada repo
 ```
 
-Próximamente: plantillas de `config` y `.gitconfig`, guías por puesto, script `gclone`.
+Próximamente: guías de notebook y Perette, script `gclone`.
 
 ## Estado
 
 | Puesto | Estado |
 |---|---|
-| Callao | 🔍 diagnóstico en curso |
+| Callao | 🛠️ guía lista para aplicar ([docs/guia-callao.md](docs/guia-callao.md)) |
 | Notebook | ⏳ pendiente |
-| Perette | ⏳ pendiente (se aplica con la guía) |
+| Perette | ⏳ pendiente |
