@@ -12,11 +12,11 @@ Relevado el 2026-10-05.
 
 | Archivo | Comentario de la clave | Huella (SHA256) | ¿Dónde está registrada? |
 |---|---|---|---|
-| `asimov_ed25519` | cpaez@siempro.gob.ar asimov | `DXANT702…` | a verificar |
-| `gitlab_ed25519` | cpaez | `TQNsOFJT…` | a verificar |
-| `id_ed25519` | XtnPaez GitHub | `cCbj2Qv8…` | a verificar |
-| `id_ed25519_aal` | aal.github@gmail.com | `AcKiQwMA…` | a verificar |
-| `id_ed25519_xtnpaez` | cpaez@siempro.gob.ar | `JlBaCD1U…` | a verificar |
+| `asimov_ed25519` | cpaez@siempro.gob.ar asimov | `DXANT702…` | ❌ en ningún servidor (huérfana) |
+| `gitlab_ed25519` | cpaez | `TQNsOFJT…` | ✅ GitLab (@cpaez) · ✅ asimov:2222 (a confirmar con ls-remote) |
+| `id_ed25519` | XtnPaez GitHub | `cCbj2Qv8…` | ❓ GitHub no testeable desde Callao (timeout) |
+| `id_ed25519_aal` | aal.github@gmail.com | `AcKiQwMA…` | ❓ GitHub no testeable desde Callao (timeout) |
+| `id_ed25519_xtnpaez` | cpaez@siempro.gob.ar | `JlBaCD1U…` | ❓ GitHub no testeable desde Callao (timeout) |
 
 ⚠️ Los nombres de archivo no coinciden con los comentarios (`id_ed25519` dice "XtnPaez GitHub"; `id_ed25519_xtnpaez` dice "siempro"). Se verifica con `scripts/diagnostico.sh`.
 
@@ -38,9 +38,35 @@ Relevado el 2026-10-05.
 | `credential.*.provider=generic` | Restos de acceso HTTPS a asimov/gitlab | Revisar al migrar a SSH |
 | Una sola identidad global | Commits institucionales salen con gmail personal | `includeIf` por carpeta |
 
+## Resultado del diagnóstico (2026-10-05)
+
+- **GitHub por SSH no anda desde la red de Callao:** `ssh.github.com:443` da *Connection timed out* con todas las claves. HTTPS sí anda (`git clone https://...` funcionó sin pedir nada).
+- **asimov:** el SSH de git es el **puerto 2222**. El puerto 22 es el SSH del sistema (pide password): no sirve para git. La clave que entra es `gitlab_ed25519`, no `asimov_ed25519`.
+- **GitLab:** `gitlab_ed25519` entra como `@cpaez` por el puerto 22.
+- **`github-gitmapa` → `~/.ssh/bowie`:** casi seguro un error, `bowie` es el nombre de un repo de XtnPaez, no de una clave.
+
+## Repos locales y remotos
+
+| Repo | Remoto actual | Observación |
+|---|---|---|
+| AAL/asiaamericalatina.org | `git@github-aal:asiaamericalatina/…` | SSH GitHub, no anda en Callao |
+| callao/asimov/cod_pos_AR, efpi, pygis_aplicado, SIGfrido, starker | `git@asimov:cpaez/…` | ✅ OK |
+| callao/asimov/geall | `https://asimov.cncps.gob.ar/…` | HTTPS, pasar a SSH |
+| callao/externos/visualizador_geo | `https://github.com/edeleitha/…` | repo de terceros |
+| callao/gitlab/bmw, vizlab | `git@gitlab-callao:ssctyai/siempro/…` | ✅ OK |
+| perette/geovista | `https://asimov.cncps.gob.ar/…` | asimov por HTTPS, pasar a SSH |
+| perette/pc2web, zonificacion | `https://github.com/XtnPaez/…` | GitHub XtnPaez |
+| XtnPaez/afa-dashboard-arg, fiscalizar, git-multicuenta | `https://github.com/XtnPaez/…` | HTTPS |
+| XtnPaez/bowie | `https://XtnPaez@github.com/…` | HTTPS con usuario en la URL |
+| XtnPaez/UKTester | `git@github.com:XtnPaez/…` | SSH **sin alias**: no anda en Callao |
+
+⚠️ `perette/` mezcla cuentas (asimov y GitHub XtnPaez): la identidad no puede depender solo de la carpeta.
+
 ## Pendiente
 
-- [ ] Correr `scripts/diagnostico.sh` y completar la columna "¿Dónde está registrada?"
-- [ ] Inventario de repos locales y sus remotos
+- [x] Correr `scripts/diagnostico.sh`
+- [x] Inventario de repos locales y sus remotos
+- [ ] Probar GitHub por puerto 22 y confirmar asimov con `git ls-remote`
+- [ ] Identificar a qué cuenta de GitHub pertenece cada clave (desde una red sin bloqueo)
 - [ ] Definir dónde está la clave de gitmapa
 - [ ] Confirmar si `aal` sigue en uso
