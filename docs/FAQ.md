@@ -65,6 +65,34 @@ Si la URL ya tenía el usuario correcto: ver [Me logueé con la cuenta equivocad
 
 ---
 
+## Your configuration specifies to merge with the ref 'refs/heads/master' … but no such ref was fetched
+
+También: `Your branch is based on 'origin/master', but the upstream is gone.`
+
+**Por qué:** la rama que sigue tu repo local no existe en el servidor. Casi siempre es porque **el repo del servidor está vacío** (se creó pero el primer push nunca llegó), o porque allá la rama se llama distinto (`main` vs `master`).
+
+**Qué hacer:**
+
+```bash
+git ls-remote origin
+```
+
+- **No muestra nada** → repo vacío. Revisar la identidad del commit y hacer el primer push:
+  ```bash
+  git log -1 --format='%an <%ae>'
+  git commit --amend --reset-author --no-edit   # solo si el mail es el equivocado
+  git push -u origin master
+  ```
+- **Muestra otra rama** (ej. `refs/heads/main`) → apuntar la rama local a esa:
+  ```bash
+  git fetch origin
+  git branch -u origin/main
+  ```
+
+`scripts/verificar.sh` marca estos casos con ⚠️.
+
+---
+
 ## Permission denied (publickey)
 
 Solo aplica a **asimov y GitLab** (GitHub no usa SSH).
