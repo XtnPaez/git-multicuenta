@@ -67,6 +67,6 @@ Próximamente: guías de notebook y Perette, script `gclone`.
 
 | Puesto | Estado |
 |---|---|
-| Callao | 🛠️ guía lista para aplicar ([docs/guia-callao.md](docs/guia-callao.md)) |
+| Callao | ✅ aplicado 2026-10-05 · 15/15 repos vivos OK ([guía](docs/guia-callao.md)) |
 | Notebook | ⏳ pendiente |
 | Perette | ⏳ pendiente |

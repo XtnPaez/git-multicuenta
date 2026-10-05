@@ -66,7 +66,12 @@ Relevado el 2026-10-05.
 
 - [x] Correr `scripts/diagnostico.sh`
 - [x] Inventario de repos locales y sus remotos
-- [ ] Probar GitHub por puerto 22 y confirmar asimov con `git ls-remote`
-- [ ] Identificar a qué cuenta de GitHub pertenece cada clave (desde una red sin bloqueo)
-- [ ] Definir dónde está la clave de gitmapa
-- [ ] Confirmar si `aal` sigue en uso
+- [x] Probar GitHub por puerto 22 (también bloqueado) y confirmar asimov con `git ls-remote` (OK)
+- [x] ~~Identificar claves de GitHub~~ → no hace falta: GitHub pasa a HTTPS
+- [x] `aal` sigue en uso (asiaamericalatina)
+- [ ] Definir qué es gitmapa y su identidad
+- [ ] Decidir qué hacer con `perette/geovista`, `pc2web` y `zonificacion` (sus remotos ya no existen)
+
+## Resultado de la aplicación (2026-10-05)
+
+Guía aplicada. `scripts/verificar.sh`: **15 OK**, 3 ❌ que son repos cuyo remoto ya no existe (`perette/geovista`, `perette/pc2web`, `perette/zonificacion`). Las copias locales pueden ser el único ejemplar: no borrar sin decidir antes.
